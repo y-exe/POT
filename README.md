@@ -12,7 +12,7 @@
 
 ## 導入
 
-### 1: NodeJS
+### Step 1: Node.jsのインスト
 
  [Node.js](https://nodejs.org/) (v16.9.0以上) をPCにインストール
 
