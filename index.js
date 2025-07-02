@@ -3,15 +3,6 @@ const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const fs = require('fs');
 require('dotenv').config(); 
 
-// --- Express Server (for uptime) ---
-const express = require('express');
-const app = express();
-app.get('/', (req, res) => {
-  res.send('ぽっさんは男でゲイではありません');
-});
-app.listen(2045, () => console.log('Webサーバーがポート2045で起動しました。'));
-
-
 // --- Create Client ---
 const client = new Client({ intents: Object.values(GatewayIntentBits) });
 
