@@ -19,7 +19,7 @@
 ### Step 2: ライブラリ
 
 ```bash
-npm install discord.js express dotenv axios
+npm install discord.js dotenv axios
 ```
 
 ### Step 3: トークン設定
