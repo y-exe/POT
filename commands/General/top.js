@@ -1,25 +1,31 @@
-const Discord = require("discord.js");
+const { SlashCommandBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, MessageFlags } = require("discord.js");
 
 module.exports = {
-  data: new Discord.SlashCommandBuilder()
+  data: new SlashCommandBuilder()
     .setName("top")
-    .setDescription("topページを取得します"),
+    .setDescription("このチャンネルの最も古いメッセージへのリンクを取得します"),
   async execute(interaction) {
-    const channel = interaction.channel;
-    const messages = await channel.messages.fetch({ after: '0', limit: 1 });
-    if (messages.size > 0) {
-      const message = messages.first();
-      const messageLink = `https://discord.com/channels/${message.guild.id}/${channel.id}/${message.id}`;
-      const row = new Discord.ButtonBuilder()
-        .setLabel('メッセージリンク')
-        .setURL(messageLink)
-        .setStyle(Discord.ButtonStyle.Link);
-      await interaction.reply({
-        content: '最も古いメッセージのリンクを取得しました',
-        components: [new Discord.ActionRowBuilder().setComponents(row)],
-      });
-    } else {
-      await interaction.reply('このチャンネルにはメッセージがありません。');
+    await interaction.deferReply(); 
+    try {
+      const messages = await interaction.channel.messages.fetch({ after: '0', limit: 1 });
+      const firstMessage = messages.first();
+
+      if (firstMessage) {
+        const row = new ActionRowBuilder()
+          .addComponents(
+            new ButtonBuilder()
+              .setLabel('最初のメッセージへ飛ぶ')
+              .setStyle(ButtonStyle.Link)
+              .setURL(firstMessage.url)
+          );
+        await interaction.editReply({ content: 'このチャンネルの最初のメッセージです。', components: [row] });
+      } else {
+        await interaction.deleteReply();
+        await interaction.followUp({ content: 'このチャンネルにはメッセージがありません。', flags: [MessageFlags.Ephemeral] });
+      }
+    } catch (error) {
+        console.error(error);
+        await interaction.editReply({ content: 'メッセージの取得に失敗しました。' });
     }
   }
 };
