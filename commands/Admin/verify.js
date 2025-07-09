@@ -1,67 +1,50 @@
-const discord = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, ButtonBuilder, ButtonStyle, ActionRowBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 
 module.exports = {
-    data: new discord.SlashCommandBuilder()
+    data: new SlashCommandBuilder()
         .setName('verify')
-        .setDescription('認証パネルを設置')
+        .setDescription('認証パネルを設置します')
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator) 
         .addRoleOption(option =>
             option.setName('role')
-                .setDescription('認証ロールを選択')
+                .setDescription('認証で付与するロールを選択')
                 .setRequired(true)
         )
-        .addStringOption((option) =>
-        option
-        .setName('type')
-        .setDescription('認証方法を指定してください')
-        .setRequired(true)
-        .addChoices(
-          { name: 'ワンクリック認証', value: '1' }, 
-          { name: '足し算認証', value: '2' },
-          { name: "掛け算認証", value: "3"})
-    )
-        .setDefaultMemberPermissions(discord.PermissionFlagsBits.Administrator),
+        .addStringOption(option =>
+            option.setName('type')
+                .setDescription('認証方法を指定してください')
+                .setRequired(true)
+                .addChoices(
+                    { name: 'ワンクリック認証', value: '1' },
+                    { name: '足し算認証', value: '2' },
+                    { name: '掛け算認証', value: '3' }
+                )
+        ),
     async execute(interaction) {
         const role = interaction.options.getRole('role');
-        if (interaction.options.getString('type') === '1') {
-        const givebutton = new discord.ButtonBuilder()
-            .setCustomId("verify1"+role.id)
+        const type = interaction.options.getString('type');
+
+        
+        const verifyButton = new ButtonBuilder()
+            .setCustomId(`verify${type}${role.id}`)
             .setLabel('認証')
-            .setStyle(discord.ButtonStyle.Success)
-        const row = new discord.ActionRowBuilder()
-        .addComponents(givebutton);
-        const embed = new discord.EmbedBuilder()
-        .setTitle("認証")
-        .setDescription("下のボタンを押すと認証できます")
-        .setFields({name:"ロール名",value:"<@&"+role+">"})
-        .setColor("Green")
-        await interaction.reply({ embeds:[embed], components: [row] });
+            .setStyle(ButtonStyle.Success);
+        
+        const row = new ActionRowBuilder()
+            .addComponents(verifyButton);
+
+        const embed = new EmbedBuilder()
+            .setTitle("サーバー認証")
+            .setDescription("下のボタンを押して認証を完了してください。")
+            .setFields({ name: "付与されるロール", value: `${role}` })
+            .setColor("Green");
+
+        
+        await interaction.channel.send({ embeds: [embed], components: [row] });
+        
+        await interaction.reply({
+            content: '認証パネルを設置しました。',
+            flags: [MessageFlags.Ephemeral] 
+        });
     }
-      else if (interaction.options.getString('type') === '2') {
-        const givebutton = new discord.ButtonBuilder()
-            .setCustomId("verify2"+role.id)
-            .setLabel('認証')
-            .setStyle(discord.ButtonStyle.Success)
-        const row = new discord.ActionRowBuilder()
-        .addComponents(givebutton);
-        const embed = new discord.EmbedBuilder()
-        .setTitle("認証")
-        .setDescription("下のボタンを押すと認証できます")
-        .setFields({name:"ロール名",value:"<@&"+role+">"})
-        .setColor("Green")
-        await interaction.reply({ embeds:[embed], components: [row] });
-    }
-      else if (interaction.options.getString('type') === '3') {
-        const givebutton = new discord.ButtonBuilder()
-            .setCustomId("verify3"+role.id)
-            .setLabel('認証')
-            .setStyle(discord.ButtonStyle.Success)
-        const row = new discord.ActionRowBuilder()
-        .addComponents(givebutton);
-        const embed = new discord.EmbedBuilder()
-        .setTitle("認証")
-        .setDescription("下のボタンを押すと認証できます")
-        .setFields({name:"ロール名",value:"<@&"+role+">"})
-        .setColor("Green")
-        await interaction.reply({ embeds:[embed], components: [row] });
-    }}
 };
