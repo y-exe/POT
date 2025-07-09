@@ -1,19 +1,28 @@
-const discord = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require("discord.js");
 const axios = require('axios');
 
 module.exports = {
-  data: new discord.SlashCommandBuilder()
+  data: new SlashCommandBuilder()
     .setName('kinro')
-    .setDescription('金曜ロードショーについての情報を取得します'),
+    .setDescription('金曜ロードショーの情報を取得します'),
   async execute(interaction) {
-    const kinroApiUrl = 'https://kinro-api.vercel.app';
-    const response = await axios.get(kinroApiUrl);
-    const kinroData = response.data;
-    const embed = new discord.EmbedBuilder()
-      .setTitle(kinroData.title)
-      .setDescription(`放送予定時刻: ${kinroData.broadcastStartTime}`)
-      .setColor('#00FF00')
-      .setImage(kinroData.imageUrl);
-    await interaction.reply({ embeds: [embed] });
+    await interaction.deferReply();
+
+    try {
+      const apiResponse = await axios.get('https://kinro-api.vercel.app');
+      const data = apiResponse.data;
+
+      const embed = new EmbedBuilder()
+        .setTitle(data.title)
+        .setDescription(`放送予定時刻: ${data.broadcastStartTime}`)
+        .setColor('#00FF00')
+        .setImage(data.imageUrl);
+
+      await interaction.editReply({ embeds: [embed] });
+
+    } catch (error) {
+      console.error(error);
+      await interaction.editReply({ content: '情報の取得に失敗しました。時間をおいて再度お試しください。' });
+    }
   }
 };
