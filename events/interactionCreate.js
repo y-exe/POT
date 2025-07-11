@@ -6,7 +6,7 @@ async function handleInteractionError(interaction, error) {
     console.error('インタラクション処理中にエラーが発生しました:', error);
     const errorMessage = {
         content: 'コマンド実行中に予期せぬエラーが発生しました。時間をおいて再度お試しください。',
-        flags: [MessageFlags.Ephemeral] 
+        flags: [MessageFlags.Ephemeral]
     };
     
     if (interaction.replied || interaction.deferred) {
@@ -21,7 +21,6 @@ module.exports = {
     name: Events.InteractionCreate,
     async execute(interaction) {
         try { 
-
             if (interaction.isChatInputCommand()) {
                 const command = interaction.client.commands.get(interaction.commandName);
                 if (!command) {
@@ -32,14 +31,13 @@ module.exports = {
                 return;
             }
 
-
             if (interaction.isButton()) {
-                await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
-
                 const customId = interaction.customId;
                 const member = interaction.member;
 
                 if (customId.startsWith("verify1")) {
+                    await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
+
                     const roleId = customId.slice(7);
                     const role = interaction.guild.roles.cache.get(roleId);
                     if (!role) return interaction.editReply({ content: '対象ロールが見つかりません。' });
@@ -59,11 +57,15 @@ module.exports = {
                     const isAddition = customId.startsWith("verify2");
                     const roleId = customId.slice(7);
                     const role = interaction.guild.roles.cache.get(roleId);
-                    if (!role) return interaction.editReply({ content: '対象ロールが見つかりません。' });
+                    if (!role) return interaction.reply({ content: '対象ロールが見つかりません。', flags: [MessageFlags.Ephemeral] });
 
                     if (member.roles.cache.has(roleId)) {
-                        const nogive = new EmbedBuilder().setTitle("エラー").setDescription(`あなたは既に認証されています`).setColor("Red").setFields({ name: 'ロール名', value: `${role}` });
-                        return interaction.editReply({ embeds: [nogive] });
+                        const nogive = new EmbedBuilder()
+                            .setTitle("エラー")
+                            .setDescription(`あなたは既に認証されています`)
+                            .setColor("Red")
+                            .setFields({ name: 'ロール名', value: `${role}` });
+                        return interaction.reply({ embeds: [nogive], flags: [MessageFlags.Ephemeral] });
                     }
                     
                     const one = Math.floor(Math.random() * 8) + 1;
@@ -73,17 +75,15 @@ module.exports = {
                     userAnswers.set(interaction.user.id, { answer, roleId });
 
                     const modal = new ModalBuilder()
-                        .setCustomId("verify_modal") 
+                        .setCustomId("verify_modal")
                         .setTitle(question);
                     const answerInput = new TextInputBuilder().setCustomId("answer_input").setLabel("計算の答えを入力してください").setStyle(TextInputStyle.Short);
                     modal.addComponents(new ActionRowBuilder().addComponents(answerInput));
                     
-                    await interaction.deleteReply();
                     await interaction.showModal(modal);
                     return;
                 }
             }
-
 
             if (interaction.isModalSubmit() && interaction.customId === "verify_modal") {
                 await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
